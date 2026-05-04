@@ -52,7 +52,7 @@ jobs:
       - name: Deploy to Dev via Docker Compose
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: react-app
+          ECR_REPOSITORY: nirmal/react-app
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
         run: |
           # Clean up old containers
