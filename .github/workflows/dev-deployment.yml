@@ -34,7 +34,7 @@ jobs:
 
   deploy-dev:
     needs: build-and-push
-    runs-on: [self-hosted, dev] # RUNS ON YOUR AWS INSTANCE
+    runs-on: [self-hosted, dev-runner] # RUNS ON YOUR AWS INSTANCE
     steps:
       - uses: actions/checkout@v4
 
