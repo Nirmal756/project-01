@@ -1,84 +1,133 @@
 name: Dev Deployment
 
+
+
 on:
+
   push:
+
     branches: [ "dev" ]
 
+
+
 jobs:
+
   build-and-push:
-    # Changed from ubuntu-latest to your self-hosted runner
-    runs-on: [self-hosted, dev-runner] 
+
+    runs-on: [self-hosted, dev-runner]
+
     outputs:
+
       image_tag: ${{ github.sha }}
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+
+
 
       - name: Configure AWS credentials
+
         uses: aws-actions/configure-aws-credentials@v4
+
         with:
+
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
           aws-region: ap-south-1
 
+
+
       - name: Login to Amazon ECR
+
         id: login-ecr
+
         uses: aws-actions/amazon-ecr-login@v2
+
+
 
       - name: Build and Push Image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: nirmal/react-app
-          IMAGE_TAG: latest
-        run: |
-          # 1. Manually login the sudo user to ECR
-          aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
 
-          # 2. Build the image
-          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
-               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
-               IMAGE_TAG=${{ env.IMAGE_TAG }} \
-               docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
-          
-          # 3. Push the image
-          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
-               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
-               IMAGE_TAG=${{ env.IMAGE_TAG }} \
-               docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+        env:
+
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+
+          ECR_REPOSITORY: nirmal/react-app
+
+          IMAGE_TAG: latest
+
+        run: |
+
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+
+
   deploy-dev:
+
     needs: build-and-push
-    runs-on: [self-hosted, dev-runner]
+
+    runs-on: [self-hosted, dev-runner] # RUNS ON YOUR AWS INSTANCE
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+
+
 
       - name: Configure AWS credentials
+
         uses: aws-actions/configure-aws-credentials@v4
+
         with:
+
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
           aws-region: ap-south-1
 
+
+
       - name: Login to Amazon ECR
+
         id: login-ecr
+
         uses: aws-actions/amazon-ecr-login@v2
 
+
+
       - name: Deploy to Dev via Docker Compose
+
         env:
+
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+
           ECR_REPOSITORY: nirmal/react-app
+
           IMAGE_TAG: latest
+
         run: |
-          # Ensure host Nginx is stopped if not already done manually
-          sudo systemctl stop nginx || true
-          
-          # Explicitly pass variables into the sudo docker compose command
-          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
-               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
-               IMAGE_TAG=${{ env.IMAGE_TAG }} \
-               docker compose -f docker-compose.dev.yml down || true
+
+          # Explicitly pass variables into the sudo command
 
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
+
                ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
+
                IMAGE_TAG=${{ env.IMAGE_TAG }} \
+
+               docker compose -f docker-compose.dev.yml down || true
+
+
+
+          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
+
+               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
+
+               IMAGE_TAG=${{ env.IMAGE_TAG }} \
+
                docker compose -f docker-compose.dev.yml up -d
