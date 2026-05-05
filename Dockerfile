@@ -1,16 +1,16 @@
-# Stage 1: Build
-FROM node:18-alpine as build
+FROM node:18-alpine
+RUN apk add --no-cache nginx
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-ARG ENV_FILE=.env.dev
-RUN cp ${ENV_FILE} .env
-RUN npm run build
+COPY nginx/default.conf /etc/nginx/http.d/default.conf
 
-# Stage 2: Serve
-FROM nginx:stable-alpine
-COPY --from=build /app/build /usr/share/nginx/html
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# This script runs ON THE EC2 at startup
+RUN echo '#!/bin/sh\n\
+npm run build && \
+cp -r build/* /usr/share/nginx/html/ && \
+nginx -g "daemon off;"' > /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
