@@ -31,17 +31,20 @@ jobs:
           ECR_REPOSITORY: nirmal/react-app
           IMAGE_TAG: latest
         run: |
-          # Passing variables explicitly to sudo to ensure they aren't dropped
+          # 1. Manually login the sudo user to ECR
+          aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+
+          # 2. Build the image
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
                ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
                IMAGE_TAG=${{ env.IMAGE_TAG }} \
                docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
           
+          # 3. Push the image
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
                ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
                IMAGE_TAG=${{ env.IMAGE_TAG }} \
                docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-
   deploy-dev:
     needs: build-and-push
     runs-on: [self-hosted, dev-runner]
