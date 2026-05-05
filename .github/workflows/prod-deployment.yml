@@ -5,10 +5,10 @@ on:
     branches: [ "main" ]
 
 jobs:
-  deploy-prod: # Changed name to reflect production
+  deploy-prod:
     runs-on: [self-hosted, prod-runner]
     steps:
-      # 1. FIX: Force cleanup of the workspace to avoid permission errors
+      # 1. Force cleanup of the workspace to avoid permission errors
       - name: Cleanup Workspace
         run: |
           sudo rm -rf ${{ github.workspace }}/*
@@ -34,17 +34,23 @@ jobs:
           ECR_REPOSITORY: nirmal/react-app
           IMAGE_TAG: latest
         run: |
-          # 1. Login
+          # 1. Login Docker to ECR
           aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
           
-          # 2. Hard Cleanup: Stop and Remove EVERYTHING related to this project
-          # This ensures Port 8090 is completely released
-          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} \
-          docker compose -f docker-compose.dev.yml down --remove-orphans || true
+          # 2. Explicitly pull the fresh image from ECR
+          sudo docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+          # 3. Stop and Remove old containers (Releases Port 80/8090)
+          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
+               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
+               IMAGE_TAG=${{ env.IMAGE_TAG }} \
+               docker compose -f docker-compose.dev.yml down --remove-orphans || true
           
-          # 3. Prune unused systems (optional but safe)
+          # 4. Prune to keep the production instance clean
           sudo docker system prune -f
 
-          # 4. Start fresh
-          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} \
-          docker compose -f docker-compose.dev.yml up -d
+          # 5. Start fresh with the image and apply the .env.prod (as defined in your compose file)
+          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
+               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
+               IMAGE_TAG=${{ env.IMAGE_TAG }} \
+               docker compose -f docker-compose.dev.yml up -d
