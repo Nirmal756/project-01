@@ -2,87 +2,52 @@ import React from 'react';
 import './App.css';
 
 function App() {
-  // Pulling variables from your .env.dev
-  const themeColor = process.env.REACT_APP_COLOR || "#3b82f6"; // Defaults to Blue if .env fails
+  // Mapping .env variables
+  const themeColor = process.env.REACT_APP_COLOR || "#2563eb"; 
+  const projectName = process.env.REACT_APP_NAME || "DevOps Pipeline";
+  const envName = process.env.REACT_APP_ENV || "Unknown";
   const isDebug = process.env.REACT_APP_DEBUG === "true";
 
   return (
-    <div className="App">
-      {/* Dynamic Header Sidebar-style accent */}
-      <nav className="side-accent" style={{ backgroundColor: themeColor }}></nav>
-
-      <div className="main-layout">
-        <header className="business-header">
-          <div className="brand">
-            <span className="brand-icon">🌐</span>
-            <div>
-              <h1>{process.env.REACT_APP_NAME || "Enterprise Logistics"}</h1>
-              <span className="env-badge" style={{ color: themeColor, borderColor: themeColor }}>
-                {process.env.REACT_APP_ENV} MODE
-              </span>
-            </div>
+    <div className="App" style={{ backgroundColor: themeColor }}>
+      <div className="glass-card">
+        <header className="dashboard-header">
+          <div className="status-indicator">
+            <span className="pulse"></span> System Operational
           </div>
-          <div className="user-profile">
-            <p>System Administrator</p>
-            <div className="avatar">AD</div>
-          </div>
+          <h1>{projectName}</h1>
+          <p className="env-label">Infrastructure: <strong>{envName}</strong></p>
         </header>
 
-        <main className="dashboard-content">
-          <div className="metrics-row">
-            <div className="metric-card">
-              <label>Active Shipments</label>
-              <h2>1,284</h2>
-              <span className="trend positive">↑ 12% vs last month</span>
-            </div>
-            <div className="metric-card">
-              <label>Fleet Efficiency</label>
-              <h2>94.2%</h2>
-              <span className="trend">Optimal Performance</span>
-            </div>
-            <div className="metric-card">
-              <label>Revenue (MTD)</label>
-              <h2>$4.2M</h2>
-              <span className="trend positive">↑ 5.4%</span>
+        <section className="metrics-grid">
+          <div className="metric">
+            <label>Pipeline Status</label>
+            <div className="status-text">Healthy</div>
+          </div>
+          <div className="metric">
+            <label>Debug Mode</label>
+            <div className={`status-text ${isDebug ? 'debug-on' : ''}`}>
+              {isDebug ? "Active" : "Disabled"}
             </div>
           </div>
+        </section>
 
-          <section className="info-section">
-            <div className="details-panel">
-              <h3>System Configuration</h3>
-              <table className="config-table">
-                <tbody>
-                  <tr>
-                    <td>Instance Identifier</td>
-                    <td>{process.env.REACT_APP_NAME}</td>
-                  </tr>
-                  <tr>
-                    <td>Deployment Environment</td>
-                    <td style={{ fontWeight: 'bold', color: themeColor }}>{process.env.REACT_APP_ENV}</td>
-                  </tr>
-                  <tr>
-                    <td>Diagnostic Debugging</td>
-                    <td>
-                      <span className={`status-pill ${isDebug ? 'on' : 'off'}`}>
-                        {isDebug ? "ENABLED" : "DISABLED"}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+        <div className="deployment-details">
+          <h3>Deployment Metadata</h3>
+          <ul>
+            <li><strong>Registry:</strong> Amazon ECR</li>
+            <li><strong>Runner:</strong> Self-Hosted (EC2)</li>
+            <li><strong>Orchestration:</strong> Docker Compose</li>
+          </ul>
+        </div>
 
-            <div className="color-panel" style={{ borderLeft: `8px solid ${themeColor}` }}>
-              <h3>Brand Identity</h3>
-              <p>This module's UI is currently rendered using the environment-specific branding color:</p>
-              <div className="color-hex" style={{ color: themeColor }}>{themeColor}</div>
-              <div className="visual-sample" style={{ backgroundColor: themeColor }}></div>
-            </div>
-          </section>
-        </main>
+        <div className="theme-info">
+          <p>Background color driven by <code>REACT_APP_COLOR</code></p>
+          <div className="hex-display">{themeColor}</div>
+        </div>
 
-        <footer className="business-footer">
-          <p>© 2026 Global Logistics Corp | Infrastructure: <strong>{process.env.REACT_APP_ENV}</strong></p>
+        <footer className="footer">
+          &copy; 2026 {projectName} | Automated via GitHub Actions
         </footer>
       </div>
     </div>
