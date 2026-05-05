@@ -59,15 +59,8 @@ jobs:
           ECR_REPOSITORY: nirmal/react-app
           IMAGE_TAG: latest
         run: |
-          # 1. Stop host nginx to free port 80
-          sudo systemctl stop nginx || true
-          
-          # 2. Login root user to ECR
-          aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+          # Explicitly pass variables into the sudo command
+          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} docker compose -f docker-compose.dev.yml down || true
 
-          # 3. Use sh -c to ensure variables are passed correctly to sudo docker compose
-          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} \
-          sh -c 'docker compose -f docker-compose.dev.yml down || true'
+          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} docker compose -f docker-compose.dev.yml up -d
 
-          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} \
-          sh -c 'docker compose -f docker-compose.dev.yml up -d'
