@@ -2,11 +2,11 @@ name: Prod Deployment
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "main" ]
 
 jobs:
   build-and-push:
-    runs-on: [self-hosted, dev-runner]
+    runs-on: [self-hosted, prod-runner]
     outputs:
       image_tag: ${{ github.sha }}
     steps:
@@ -42,7 +42,7 @@ jobs:
 
   deploy-dev:
     needs: build-and-push
-    runs-on: [self-hosted, dev-runner]
+    runs-on: [self-hosted, prod-runner]
     steps:
       - uses: actions/checkout@v4
 
