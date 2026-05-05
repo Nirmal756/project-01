@@ -6,12 +6,14 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest # Build on GitHub's cloud to save runner resources
+    # Changed from ubuntu-latest to your self-hosted runner
+    runs-on: [self-hosted, dev-runner] 
     outputs:
       image_tag: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -29,14 +31,23 @@ jobs:
           ECR_REPOSITORY: nirmal/react-app
           IMAGE_TAG: latest
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          # Passing variables explicitly to sudo to ensure they aren't dropped
+          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
+               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
+               IMAGE_TAG=${{ env.IMAGE_TAG }} \
+               docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
+          
+          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
+               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
+               IMAGE_TAG=${{ env.IMAGE_TAG }} \
+               docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
   deploy-dev:
     needs: build-and-push
-    runs-on: [self-hosted, dev-runner] # RUNS ON YOUR AWS INSTANCE
+    runs-on: [self-hosted, dev-runner]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -55,6 +66,16 @@ jobs:
           ECR_REPOSITORY: nirmal/react-app
           IMAGE_TAG: latest
         run: |
-          # Use "docker compose" (no hyphen) for V2 compatibility
-          sudo -E docker compose -f docker-compose.dev.yml down || true
-          sudo -E docker compose -f docker-compose.dev.yml up -d
+          # Ensure host Nginx is stopped if not already done manually
+          sudo systemctl stop nginx || true
+          
+          # Explicitly pass variables into the sudo docker compose command
+          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
+               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
+               IMAGE_TAG=${{ env.IMAGE_TAG }} \
+               docker compose -f docker-compose.dev.yml down || true
+
+          sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
+               ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
+               IMAGE_TAG=${{ env.IMAGE_TAG }} \
+               docker compose -f docker-compose.dev.yml up -d
