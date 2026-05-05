@@ -44,7 +44,7 @@ jobs:
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
                ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
                IMAGE_TAG=${{ env.IMAGE_TAG }} \
-               docker compose -f docker-compose.dev.yml down --remove-orphans || true
+               docker compose -f docker-compose.prod.yml down --remove-orphans || true
           
           # 4. Prune to keep the production instance clean
           sudo docker system prune -f
@@ -53,4 +53,4 @@ jobs:
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
                ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
                IMAGE_TAG=${{ env.IMAGE_TAG }} \
-               docker compose -f docker-compose.dev.yml up -d
+               docker compose -f docker-compose.prod.yml up -d
