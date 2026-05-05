@@ -5,12 +5,12 @@ on:
     branches: [ "main" ]
 
 jobs:
-  deploy-dev:
+  deploy-prod: # Changed name to reflect production
     runs-on: [self-hosted, prod-runner]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -30,12 +30,12 @@ jobs:
         run: |
           # 1. Login Docker to ECR
           aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
-
-          # 2. Pull the latest image explicitly (Optional but recommended)
+          
+          # 2. Pull the latest image explicitly
           sudo docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-
-          # 3. Down
+          
+          # 3. Down (Using the compose file from your repo)
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} docker compose -f docker-compose.dev.yml down || true
-
+          
           # 4. Up
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} docker compose -f docker-compose.dev.yml up -d
