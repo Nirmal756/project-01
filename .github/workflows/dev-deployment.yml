@@ -8,7 +8,6 @@ jobs:
   build-and-push:
     runs-on: [self-hosted, dev-runner]
     steps:
-      # Step 0: Fix permission issues by cleaning workspace first
       - name: Cleanup Workspace
         run: |
           sudo rm -rf ${{ github.workspace }}/*
@@ -33,28 +32,18 @@ jobs:
           ECR_REPOSITORY: nirmal/react-app
           IMAGE_TAG: latest
         run: |
-          # 1. Login Docker to ECR
           aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
-
-          # 2. Build Generic Image (REMOVED --build-arg)
-          # This image is now just raw code + node_modules
-          sudo docker build \
-            -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
           
-          # 3. Push to ECR
+          # Build generic image (No --build-arg)
+          sudo docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
+          
           sudo docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
   deploy-dev:
     needs: build-and-push
     runs-on: [self-hosted, dev-runner]
     steps:
-      - name: Cleanup Workspace
-        run: |
-          sudo rm -rf ${{ github.workspace }}/*
-          sudo rm -rf ${{ github.workspace }}/.* || true
-
       - uses: actions/checkout@v4
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -66,19 +55,17 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Deploy to Dev via Docker Compose
+      - name: Deploy via Docker Compose
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: nirmal/react-app
           IMAGE_TAG: latest
         run: |
-          # 1. Login Docker to ECR
           aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
-
-          # 2. Pull the latest generic image
+          
+          # Pull the generic image
           sudo docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
-          # 3. Down & Up (This is where the local EC2 .env.dev is used)
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} \
                ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} \
                IMAGE_TAG=${{ env.IMAGE_TAG }} \
