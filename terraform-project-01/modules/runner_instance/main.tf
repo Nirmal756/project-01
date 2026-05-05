@@ -16,15 +16,22 @@ resource "local_file" "private_key_pem" {
   file_permission = "0400"
 }
 
-# 4. Get the Default VPC
+# 4. Networking: Get Default VPC and its Subnets
 data "aws_vpc" "default" {
   default = true
 }
 
-# 5. Security Group for SSH
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
+# 5. Security Group for SSH & HTTP
 resource "aws_security_group" "ssh" {
   name        = "allow-ssh-${var.env_name}"
-  description = "Allow SSH access for ${var.env_name}"
+  description = "Allow SSH and HTTP access for ${var.env_name}"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
@@ -40,7 +47,7 @@ resource "aws_security_group" "ssh" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allows anyone to see the web page
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -53,13 +60,17 @@ resource "aws_security_group" "ssh" {
 
 # 6. The EC2 Instance
 resource "aws_instance" "this" {
-  ami           = "ami-07a00cf47dbbc844c" # Ubuntu 22.04 LTS
+  ami           = "ami-07a00cf47dbbc844c" # Ubuntu 22.04 LTS (Verify region is us-east-1)
   instance_type = var.instance_type
+
+  # Explicitly placing the instance in a subnet belonging to the VPC above
+  subnet_id = data.aws_subnets.default.ids[0]
+
+  # Referencing the Security Group by ID ensures a dependency link
+  vpc_security_group_ids = [aws_security_group.ssh.id]
 
   # Reference the generated key pair
   key_name = aws_key_pair.generated_key.key_name
-
-  vpc_security_group_ids = [aws_security_group.ssh.id]
 
   user_data = templatefile("${path.module}/templates/setup.sh.tpl", {
     env_name     = var.env_name
@@ -74,5 +85,6 @@ resource "aws_instance" "this" {
 
 # 7. Output the IP
 output "public_ip" {
-  value = aws_instance.this.public_ip
+  value       = aws_instance.this.public_ip
+  description = "The public IP address of the runner instance"
 }

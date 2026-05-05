@@ -33,5 +33,3 @@ sudo -u ubuntu ./config.sh --url ${repo_url} --token ${github_token} --name "${e
 
 # Start the runner in the background
 sudo -u ubuntu nohup ./run.sh &
-
-echo "<h1>Success! This is your ${env_name} server.</h1>" | sudo tee /var/www/html/index.html
