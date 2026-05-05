@@ -8,6 +8,12 @@ jobs:
   deploy-prod: # Changed name to reflect production
     runs-on: [self-hosted, prod-runner]
     steps:
+      # 1. FIX: Force cleanup of the workspace to avoid permission errors
+      - name: Cleanup Workspace
+        run: |
+          sudo rm -rf ${{ github.workspace }}/*
+          sudo rm -rf ${{ github.workspace }}/.* || true
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
