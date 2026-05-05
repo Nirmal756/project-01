@@ -59,8 +59,11 @@ jobs:
           ECR_REPOSITORY: nirmal/react-app
           IMAGE_TAG: latest
         run: |
-          # Explicitly pass variables into the sudo command
+          # 1. Login Docker to ECR (Now that AWS CLI is installed)
+          aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+
+          # 2. Down
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} docker compose -f docker-compose.dev.yml down || true
 
+          # 3. Up
           sudo ECR_REGISTRY=${{ env.ECR_REGISTRY }} ECR_REPOSITORY=${{ env.ECR_REPOSITORY }} IMAGE_TAG=${{ env.IMAGE_TAG }} docker compose -f docker-compose.dev.yml up -d
-
