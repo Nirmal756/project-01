@@ -2,52 +2,54 @@ import React from 'react';
 import './App.css';
 
 function App() {
-  // Mapping .env variables
-  const themeColor = process.env.REACT_APP_COLOR || "#2563eb"; 
-  const projectName = process.env.REACT_APP_NAME || "DevOps Pipeline";
-  const envName = process.env.REACT_APP_ENV || "Unknown";
+  // These variables are baked in during the 'docker build' via your Build Args
+  const bgColor = process.env.REACT_APP_COLOR || "#1e293b"; // Default dark slate
+  const siteName = process.env.REACT_APP_NAME || "DevOps Portal";
+  const envName = process.env.REACT_APP_ENV || "Production";
   const isDebug = process.env.REACT_APP_DEBUG === "true";
 
   return (
-    <div className="App" style={{ backgroundColor: themeColor }}>
-      <div className="glass-card">
-        <header className="dashboard-header">
-          <div className="status-indicator">
-            <span className="pulse"></span> System Operational
+    /* Dynamic background color from .env */
+    <div className="App" style={{ backgroundColor: bgColor }}>
+      <div className="glass-container">
+        <header className="app-header">
+          <div className="pulse-wrapper">
+            <span className="pulse-dot"></span>
+            <span className="status-label">System Live</span>
           </div>
-          <h1>{projectName}</h1>
-          <p className="env-label">Infrastructure: <strong>{envName}</strong></p>
+          <h1>{siteName}</h1>
+          <p className="env-badge">{envName} Environment</p>
         </header>
 
-        <section className="metrics-grid">
-          <div className="metric">
-            <label>Pipeline Status</label>
-            <div className="status-text">Healthy</div>
+        <section className="stats-grid">
+          <div className="stat-card">
+            <label>Deployment Status</label>
+            <div className="value">Stable</div>
           </div>
-          <div className="metric">
+          <div className="stat-card">
             <label>Debug Mode</label>
-            <div className={`status-text ${isDebug ? 'debug-on' : ''}`}>
-              {isDebug ? "Active" : "Disabled"}
+            <div className={`value ${isDebug ? 'debug-active' : ''}`}>
+              {isDebug ? "Enabled" : "Disabled"}
             </div>
           </div>
         </section>
 
-        <div className="deployment-details">
-          <h3>Deployment Metadata</h3>
+        <div className="tech-stack">
+          <h3>Infrastructure Details</h3>
           <ul>
-            <li><strong>Registry:</strong> Amazon ECR</li>
-            <li><strong>Runner:</strong> Self-Hosted (EC2)</li>
             <li><strong>Orchestration:</strong> Docker Compose</li>
+            <li><strong>Registry:</strong> Amazon ECR</li>
+            <li><strong>CI/CD:</strong> GitHub Actions</li>
           </ul>
         </div>
 
-        <div className="theme-info">
-          <p>Background color driven by <code>REACT_APP_COLOR</code></p>
-          <div className="hex-display">{themeColor}</div>
+        <div className="color-info">
+          <p>Current Background Variable:</p>
+          <code>{bgColor}</code>
         </div>
 
-        <footer className="footer">
-          &copy; 2026 {projectName} | Automated via GitHub Actions
+        <footer className="app-footer">
+          &copy; 2026 {siteName} | {envName} Instance
         </footer>
       </div>
     </div>

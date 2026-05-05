@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+ARG ENV_FILE=.env.dev
+RUN cp ${ENV_FILE} .env
 RUN npm run build
 
 # Stage 2: Serve

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap');
 
 * {
   margin: 0;
@@ -12,135 +12,136 @@
   justify-content: center;
   align-items: center;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  transition: background-color 0.8s ease; /* Smooth env color change */
   padding: 20px;
+  transition: background-color 0.6s ease-in-out; /* Smooth transition if color changes */
 }
 
-/* Glassmorphism Card */
-.glass-card {
+/* The Frosted Glass Container */
+.glass-container {
   background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 24px;
-  padding: 40px;
+  border-radius: 32px;
+  padding: 50px;
   width: 100%;
-  max-width: 550px;
+  max-width: 600px;
   color: white;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   text-align: center;
 }
 
-.dashboard-header h1 {
-  font-size: 2rem;
-  margin: 10px 0;
+.app-header h1 {
+  font-size: 2.2rem;
   font-weight: 800;
   letter-spacing: -1px;
+  margin: 10px 0;
 }
 
-.status-indicator {
-  font-size: 0.75rem;
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-  padding: 5px 12px;
-  border-radius: 50px;
+.pulse-wrapper {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-weight: 700;
+  background: rgba(16, 185, 129, 0.2);
+  padding: 6px 14px;
+  border-radius: 50px;
+  margin-bottom: 10px;
 }
 
-.pulse {
+.pulse-dot {
   width: 8px;
   height: 8px;
   background: #10b981;
   border-radius: 50%;
-  box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
-  animation: pulse-animation 2s infinite;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse 2s infinite;
 }
 
-.env-label {
+.env-badge {
   font-size: 0.9rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 2px;
   opacity: 0.8;
-  margin-bottom: 30px;
 }
 
-.metrics-grid {
+.stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
-  margin-bottom: 30px;
+  margin: 30px 0;
 }
 
-.metric {
+.stat-card {
   background: rgba(255, 255, 255, 0.1);
   padding: 20px;
-  border-radius: 16px;
+  border-radius: 18px;
   text-align: left;
 }
 
-.metric label {
-  font-size: 0.7rem;
+.stat-card label {
+  font-size: 0.75rem;
   text-transform: uppercase;
-  opacity: 0.6;
   font-weight: 700;
+  opacity: 0.6;
 }
 
-.status-text {
+.value {
   font-size: 1.2rem;
   font-weight: 700;
   margin-top: 5px;
 }
 
-.debug-on {
-  color: #fbbf24;
+.debug-active {
+  color: #fbbf24; /* Warning Yellow for debug */
 }
 
-.deployment-details {
+.tech-stack {
   background: rgba(0, 0, 0, 0.2);
-  padding: 20px;
-  border-radius: 16px;
+  padding: 25px;
+  border-radius: 20px;
   text-align: left;
   margin-bottom: 30px;
 }
 
-.deployment-details h3 {
+.tech-stack h3 {
   font-size: 0.9rem;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   opacity: 0.9;
 }
 
-.deployment-details ul {
+.tech-stack ul {
   list-style: none;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
-.deployment-details li {
-  margin-bottom: 5px;
+.tech-stack li {
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.color-info {
+  font-size: 0.8rem;
   opacity: 0.7;
 }
 
-.theme-info {
-  font-size: 0.8rem;
-  opacity: 0.6;
-}
-
-.hex-display {
+.color-info code {
+  display: block;
   font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
   font-size: 1.1rem;
   margin-top: 5px;
-  opacity: 1;
+  font-weight: 700;
+  color: white;
 }
 
-.footer {
+.app-footer {
   margin-top: 40px;
   font-size: 0.75rem;
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
-@keyframes pulse-animation {
+@keyframes pulse {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
   70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
